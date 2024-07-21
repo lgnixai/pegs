@@ -6,6 +6,10 @@ mod engine;
 mod api;
 mod types;
 mod vm;
+mod object;
+mod package;
+
+
 
 
 pub use engine::{Engine};

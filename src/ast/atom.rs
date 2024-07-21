@@ -1,6 +1,6 @@
 use crate::ast::expression::Expression;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
     String(String),
     Variable(String),

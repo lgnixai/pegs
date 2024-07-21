@@ -1,10 +1,11 @@
 use crate::ast::atom::Atom;
 use crate::ast::binaryop::BinaryOperation;
 use crate::ast::expression::Expression;
+use crate::object::object::Object;
 use crate::Scope;
 
 impl Expression {
-    pub fn evaluate(&self, context: &Scope) -> Result<Expression, String> {
+    pub fn evaluate(&self, context: &mut Scope) -> Result<Expression, String> {
         match self {
             Expression::Atom(Atom::Variable(var_name)) => {
                 if let Some(value) = context.get_variable(var_name) {
@@ -58,6 +59,62 @@ impl Expression {
                     .collect();
                 func.call(evaluated_args?, context)
             }
+            Expression::MethodCall(lib_name, method_name, args) => {
+
+                println!("lib_name==={:?},{:?},{:?}",lib_name,method_name,args);
+
+
+                let args_clone: Vec<Expression> = args.clone();
+
+                println!("111{:?},{:?},{:?}",lib_name,method_name,args);
+
+                let result = context.call_library_function(lib_name, method_name, args_clone);
+
+                println!("result===={:?}",result);
+
+                match result {
+                    Ok(result) => Ok(result), // Return the result wrapped in Ok
+                    Err(err) => Err(err),     // Return the error
+                }
+                // match result {
+
+
+                //     Ok(expression) => println!("Function call succeeded with result: {:?}", expression),
+                //     Err(err) => eprintln!("Function call failed with error: {:?}", err),
+                // }
+                //     let arg = arg.evaluate(context)?;
+                // if let Some(result) = context.call_library_function(lib_name, method_name, args) {
+                //     Ok(Expression::Atom(Atom::Double(result)))
+                // } else {
+                //     Err(format!("Unsupported method call {}.{}", lib_name, method_name))
+                // }
+                // if lib_name == "import" {
+                //     if let Some(library_name) = args.get(0) {
+                //         if let Expression::Atom(Atom::String(lib_name)) = library_name {
+                //             context.import_library(lib_name);
+                //             Ok(Expression::Atom(Atom::String(format!("Imported library: {}", lib_name))))
+                //         } else {
+                //             Err("Import library name must be a string".to_string())
+                //         }
+                //     } else {
+                //         Err("Import statement must specify a library name".to_string())
+                //     }
+                // } else if let Some(arg) = args.get(0) {
+                //     let arg = arg.evaluate(context)?;
+                //     match arg {
+                //         Expression::Atom(Atom::Double(x)) => {
+                //             if let Some(result) = context.call_library_function(lib_name, method_name, &[x]) {
+                //                 Ok(Expression::Atom(Atom::Double(result)))
+                //             } else {
+                //                 Err(format!("Unsupported method call {}.{}", lib_name, method_name))
+                //             }
+                //         }
+                //         _ => Err("Unsupported argument type for method call".to_string()),
+                //     }
+                // } else {
+                //     Err("Method call must have at least one argument".to_string())
+                // }
+            },
             _ => Err("Unsupported expression type".to_string()),
         }
     }

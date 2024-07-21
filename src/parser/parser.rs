@@ -120,6 +120,7 @@ fn parse_function_call_statement(input: &str) -> IResult<&str, Statement> {
 
 
 
+
 pub fn parse_statement(input: &str) -> IResult<&str, Statement> {
     alt((
         parse_variable_declaration,
@@ -127,6 +128,7 @@ pub fn parse_statement(input: &str) -> IResult<&str, Statement> {
         parse_tuple_assignment,
         parse_function_definition,
         parse_function_call_statement, // Ensure function calls are parsed
+
     ))(input)
 }
 
@@ -222,11 +224,35 @@ fn parse_function_call(input: &str) -> IResult<&str, Expression> {
 }
 
 
-fn parse_expression(input: &str) -> IResult<&str, Expression> {
+fn parse_import(input: &str) -> IResult<&str, Expression> {
+    let (input, _) = tag("import")(input)?;
+    let (input, _) = space0(input)?;
+    let (input, library_name) = parse_identifier(input)?;
+    Ok((input, Expression::MethodCall("import".to_string(), library_name, Vec::new())))
+}
+
+fn parse_method_call(input: &str) -> IResult<&str, Expression> {
+    let (input, obj_name) = parse_identifier(input)?;
+    let (input, _) = space0(input)?;
+    let (input, method_name) = delimited(tag("."), parse_identifier, space0)(input)?;
+    let (input, args) = delimited(
+        tag("("),
+        separated_list0(
+            delimited(space0, tag(","), space0),
+            parse_expression
+        ),
+        tag(")")
+    )(input)?;
+    Ok((input, Expression::MethodCall(obj_name, method_name, args)))
+}
+
+pub(crate) fn parse_expression(input: &str) -> IResult<&str, Expression> {
     alt((
         map(parse_function, Expression::from),
         parse_binary_operation,
         parse_tuple,
+        parse_import,
+        parse_method_call,
         parse_function_call, // Add function call parsing here
         parse_atom,
     ))(input)

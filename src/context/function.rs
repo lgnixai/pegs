@@ -13,20 +13,20 @@ impl Function {
         local_context.variables.borrow_mut().extend(context.variables.borrow().clone());
 
         for (param, arg) in self.parameters.iter().zip(args) {
-            let evaluated_arg = arg.evaluate(&local_context)?;
+            let evaluated_arg = arg.evaluate(&mut local_context)?;
             local_context.set_variable(param.name.clone(), evaluated_arg);
         }
 
         for statement in &self.body.statements {
             match statement {
                 Statement::VariableDeclaration(name, expr) => {
-                    let value = expr.evaluate(&local_context)?;
+                    let value = expr.evaluate(&mut local_context)?;
                     local_context.set_variable(name.clone(), value);
                 }
                 _ => {}
             }
         }
 
-        self.body.return_expr.evaluate(&local_context)
+        self.body.return_expr.evaluate(&mut local_context)
     }
 }
